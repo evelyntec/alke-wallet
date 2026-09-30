@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load formatos %}
+{% block titulo %}{{ object.nombre_completo }}{% endblock %}
+{% block contenido %}
+<section class="panel">
+  <div class="panel__cabecera">
+    <h1>{{ object.nombre_completo }}</h1>
+    <div class="acciones">
+      <a class="boton boton--suave" href="{% url 'gestion:cliente_editar' object.pk %}">Editar</a>
+      {% if user.is_staff %}<a class="boton boton--peligro" href="{% url 'gestion:cliente_eliminar' object.pk %}">Eliminar</a>{% endif %}
+    </div>
+  </div>
+  <dl class="ficha">
+    <div><dt>RUT</dt><dd>{{ object.rut }}</dd></div>
+    <div><dt>Correo</dt><dd>{{ object.email }}</dd></div>
+    <div><dt>Teléfono</dt><dd>{{ object.telefono|default:"Sin registrar" }}</dd></div>
+    <div><dt>Estado</dt><dd>{{ object.activo|yesno:"Activo,Inactivo" }}</dd></div>
+    <div><dt>Usuario</dt><dd>{{ object.usuario.username|default:"Sin usuario" }}</dd></div>
+    <div><dt>Cliente desde</dt><dd>{{ object.fecha_registro|date:"d \d\e F \d\e Y" }}</dd></div>
+    <div><dt>Saldo en CLP</dt><dd class="cifra">{{ saldo_clp|dinero:"CLP" }}</dd></div>
+    <div><dt>Saldo en USD</dt><dd class="cifra">{{ saldo_usd|dinero:"USD" }}</dd></div>
+  </dl>
+</section>
+
+<section class="panel">
+  <div class="panel__cabecera">
+    <h2>Cuentas</h2>
+    <a class="boton boton--principal" href="{% url 'gestion:cuenta_crear' %}?cliente={{ object.pk }}">Abrir cuenta</a>
+  </div>
+  <div class="tabla-contenedor">
+    <table class="tabla">
+      <thead><tr><th>Número</th><th>Alias</th><th>Tipo</th><th>Estado</th><th class="derecha">Saldo</th></tr></thead>
+      <tbody>
+        {% for cuenta in cuentas %}
+        <tr>
+          <td><a href="{{ cuenta.get_absolute_url }}">{{ cuenta.numero }}</a></td>
+          <td>{{ cuenta.alias|default:"—" }}</td>
+          <td>{{ cuenta.get_tipo_display }}</td>
+          <td><span class="estado{% if not cuenta.activa %} estado--apagado{% endif %}">{{ cuenta.activa|yesno:"Activa,Inactiva" }}</span></td>
+          <td class="derecha cifra">{{ cuenta.saldo|dinero:cuenta.moneda }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="texto-suave">Este cliente todavía no tiene cuentas.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

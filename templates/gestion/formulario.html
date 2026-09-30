@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load static %}
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block contenido %}
+<section class="panel panel--angosto">
+  <h1>{{ titulo }}</h1>
+  <form method="post" class="formulario formulario--dos" novalidate>
+    {% csrf_token %}
+    {% include "gestion/_campos.html" %}
+    <div class="acciones grupo--completo">
+      <button type="submit" class="boton boton--principal">{{ texto_boton }}</button>
+      <a class="boton boton--suave" href="{{ url_cancelar }}">Cancelar</a>
+    </div>
+  </form>
+</section>
+{% endblock %}
+{% block scripts %}
+{% if form.cuenta_origen %}<script src="{% static 'js/transaccion.js' %}"></script>{% endif %}
+{% endblock %}

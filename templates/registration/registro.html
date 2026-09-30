@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block titulo %}Crear billetera{% endblock %}
+{% block contenido %}
+<section class="acceso">
+  <div class="acceso__tarjeta acceso__tarjeta--ancha">
+    <h1>Crea tu billetera</h1>
+    <p class="texto-suave">Con estos datos quedas registrada o registrado como cliente de Alke Wallet.</p>
+    <form method="post" class="formulario formulario--dos">
+      {% csrf_token %}
+      {% include "gestion/_campos.html" %}
+      <button type="submit" class="boton boton--principal boton--ancho">Crear billetera</button>
+    </form>
+    <p class="acceso__alterno">¿Ya tienes cuenta? <a href="{% url 'login' %}">Ingresa aquí</a></p>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% load formatos %}
+{% block titulo %}Reportes{% endblock %}
+{% block contenido %}
+<section class="bienvenida">
+  <div>
+    <h1>Reportes</h1>
+    <p class="texto-suave">Consultas con filter, exclude y annotate del ORM, más SQL con raw() y cursores.</p>
+  </div>
+</section>
+
+<section class="indicadores">
+  <article><p class="indicadores__numero">{{ estadisticas.clientes }}</p><p>clientes activos</p></article>
+  <article><p class="indicadores__numero">{{ estadisticas.cuentas }}</p><p>cuentas activas</p></article>
+  <article><p class="indicadores__numero">{{ estadisticas.transacciones }}</p><p>transacciones</p></article>
+</section>
+
+<div class="columnas">
+  <section class="panel">
+    <h2>Clientes con mayor saldo en CLP</h2>
+    <table class="tabla">
+      <thead><tr><th>Cliente</th><th>Cuentas</th><th class="derecha">Saldo total</th></tr></thead>
+      <tbody>
+        {% for c in ranking %}
+        <tr><td><a href="{{ c.get_absolute_url }}">{{ c }}</a></td><td>{{ c.cantidad_cuentas }}</td><td class="derecha cifra">{{ c.saldo_total|dinero:"CLP" }}</td></tr>
+        {% empty %}<tr><td colspan="3" class="texto-suave">Sin datos.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel">
+    <h2>Movimientos en CLP por tipo</h2>
+    <table class="tabla">
+      <thead><tr><th>Tipo</th><th>Cantidad</th><th class="derecha">Monto total</th></tr></thead>
+      <tbody>
+        {% for fila in por_tipo %}
+        <tr><td>{{ fila.nombre }}</td><td>{{ fila.cantidad }}</td><td class="derecha cifra">{{ fila.total|dinero:"CLP" }}</td></tr>
+        {% empty %}<tr><td colspan="3" class="texto-suave">Sin datos.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </section>
+</div>
+
+<section class="panel">
+  <div class="panel__cabecera">
+    <h2>Cuentas con saldo sobre {{ minimo|dinero:"CLP" }}</h2>
+    <form method="get" class="filtros filtros--compacto">
+      <input class="campo" type="number" name="minimo" value="{{ minimo }}" min="0" step="1000" aria-label="Saldo mínimo">
+      <button type="submit" class="boton boton--suave">Aplicar</button>
+    </form>
+  </div>
+  <p class="nota">Consulta SQL parametrizada con Cuenta.objects.raw().</p>
+  <table class="tabla">
+    <thead><tr><th>Número</th><th>Titular</th><th>Moneda</th><th class="derecha">Saldo</th></tr></thead>
+    <tbody>
+      {% for cuenta in cuentas_altas %}
+      <tr><td><a href="{% url 'gestion:cuenta_detalle' cuenta.pk %}">{{ cuenta.numero }}</a></td><td>{{ cuenta.titular }}</td><td>{{ cuenta.moneda }}</td><td class="derecha cifra">{{ cuenta.saldo|dinero:cuenta.moneda }}</td></tr>
+      {% empty %}<tr><td colspan="4" class="texto-suave">Ninguna cuenta supera ese saldo.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<div class="columnas">
+  <section class="panel">
+    <h2>Movimientos por moneda</h2>
+    <p class="nota">Consulta con connection.cursor().</p>
+    <table class="tabla">
+      <thead><tr><th>Moneda</th><th>Tipo</th><th>Cantidad</th><th class="derecha">Total</th></tr></thead>
+      <tbody>
+        {% for fila in por_moneda %}
+        <tr><td>{{ fila.moneda }}</td><td>{{ fila.tipo }}</td><td>{{ fila.cantidad }}</td><td class="derecha cifra">{{ fila.total|dinero:fila.moneda }}</td></tr>
+        {% empty %}<tr><td colspan="4" class="texto-suave">Sin datos.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel">
+    <h2>Etiquetas más usadas</h2>
+    <table class="tabla">
+      <thead><tr><th>Etiqueta</th><th>Usos</th></tr></thead>
+      <tbody>
+        {% for e in etiquetas %}
+        <tr><td><span class="etiqueta" style="--color: {{ e.color }}">{{ e.nombre }}</span></td><td>{{ e.usos }}</td></tr>
+        {% empty %}<tr><td colspan="2" class="texto-suave">Sin datos.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </section>
+</div>
+
+<div class="columnas">
+  <section class="panel">
+    <h2>Transferencias entre clientes distintos</h2>
+    <p class="nota">Usa exclude() con F() para descartar traspasos entre cuentas propias.</p>
+    <ul class="lista">
+      {% for t in entre_clientes %}
+      <li><a href="{{ t.get_absolute_url }}"><span><strong>{{ t.cuenta_origen.cliente }} a {{ t.cuenta_destino.cliente }}</strong><small>{{ t.fecha|date:"d-m-Y" }}</small></span><span class="cifra">{{ t.monto|dinero:t.moneda }}</span></a></li>
+      {% empty %}<li class="texto-suave">Sin transferencias entre clientes.</li>{% endfor %}
+    </ul>
+  </section>
+
+  <section class="panel">
+    <h2>Cuentas sin movimientos</h2>
+    <ul class="lista">
+      {% for cuenta in sin_movimientos %}
+      <li><a href="{{ cuenta.get_absolute_url }}"><span><strong>{{ cuenta.numero }}</strong><small>{{ cuenta.cliente }}</small></span><span class="cifra">{{ cuenta.saldo|dinero:cuenta.moneda }}</span></a></li>
+      {% empty %}<li class="texto-suave">Todas las cuentas tienen movimientos.</li>{% endfor %}
+    </ul>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load formatos %}
+{% block titulo %}Cuenta {{ object.numero }}{% endblock %}
+{% block contenido %}
+<section class="billetera billetera--sola">
+  <article class="billetera__tarjeta{% if object.moneda == 'USD' %} billetera__tarjeta--dolar{% endif %}">
+    <span class="billetera__chip" aria-hidden="true"></span>
+    <p class="billetera__moneda">{{ object.alias|default:object.get_tipo_display }} · {{ object.cliente }}</p>
+    <p class="billetera__monto">{{ object.saldo|dinero:object.moneda }}</p>
+    <p class="billetera__detalle">{{ object.numero }} · {{ object.get_tipo_display }}{% if not object.activa %} · Inactiva{% endif %}</p>
+  </article>
+  <div class="acciones acciones--columna">
+    <a class="boton boton--principal" href="{% url 'gestion:transaccion_crear' %}?tipo=TRANSFERENCIA&cuenta_origen={{ object.pk }}">Transferir desde esta cuenta</a>
+    <a class="boton boton--suave" href="{% url 'gestion:transaccion_crear' %}?tipo=DEPOSITO&cuenta_destino={{ object.pk }}">Depositar</a>
+    <a class="boton boton--suave" href="{% url 'gestion:transaccion_crear' %}?tipo=RETIRO&cuenta_origen={{ object.pk }}">Retirar</a>
+    <a class="boton boton--suave" href="{% url 'gestion:cuenta_editar' object.pk %}">Editar cuenta</a>
+    <a class="boton boton--peligro" href="{% url 'gestion:cuenta_eliminar' object.pk %}">Eliminar cuenta</a>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Movimientos recientes</h2>
+  <div class="tabla-contenedor">
+    <table class="tabla">
+      <thead><tr><th>Fecha</th><th>Detalle</th><th>Tipo</th><th class="derecha">Monto</th></tr></thead>
+      <tbody>
+        {% for mov in movimientos %}
+        <tr>
+          <td>{{ mov.fecha|date:"d-m-Y H:i" }}</td>
+          <td><a href="{{ mov.get_absolute_url }}">{{ mov.descripcion|default:"Sin descripción" }}</a></td>
+          <td>{{ mov.get_tipo_display }}</td>
+          <td class="derecha cifra {% if mov.cuenta_destino_id == object.pk %}cifra--ingreso{% else %}cifra--egreso{% endif %}">
+            {% if mov.cuenta_destino_id == object.pk %}+{% else %}−{% endif %} {{ mov.monto|dinero:object.moneda }}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="texto-suave">Esta cuenta aún no tiene movimientos.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

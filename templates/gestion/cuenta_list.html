@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load formatos %}
+{% block titulo %}Cuentas{% endblock %}
+{% block contenido %}
+<section class="panel">
+  <div class="panel__cabecera">
+    <h1>Cuentas</h1>
+    <a class="boton boton--principal" href="{% url 'gestion:cuenta_crear' %}">Abrir cuenta</a>
+  </div>
+  <form method="get" class="filtros">
+    <input class="campo" type="search" name="q" value="{{ q }}" placeholder="Número, alias o titular" aria-label="Buscar cuenta">
+    <select class="campo" name="tipo" aria-label="Tipo de cuenta">
+      <option value="">Todos los tipos</option>
+      {% for valor, nombre in tipos %}<option value="{{ valor }}" {% if tipo == valor %}selected{% endif %}>{{ nombre }}</option>{% endfor %}
+    </select>
+    <select class="campo" name="moneda" aria-label="Moneda">
+      <option value="">Todas las monedas</option>
+      {% for valor, nombre in monedas %}<option value="{{ valor }}" {% if moneda == valor %}selected{% endif %}>{{ nombre }}</option>{% endfor %}
+    </select>
+    <button type="submit" class="boton boton--suave">Filtrar</button>
+  </form>
+  <div class="tabla-contenedor">
+    <table class="tabla">
+      <thead><tr><th>Número</th><th>Titular</th><th>Tipo</th><th>Moneda</th><th>Estado</th><th class="derecha">Saldo</th></tr></thead>
+      <tbody>
+        {% for cuenta in object_list %}
+        <tr>
+          <td><a href="{{ cuenta.get_absolute_url }}">{{ cuenta.numero }}</a>{% if cuenta.alias %}<br><small class="texto-suave">{{ cuenta.alias }}</small>{% endif %}</td>
+          <td>{{ cuenta.cliente }}</td>
+          <td>{{ cuenta.get_tipo_display }}</td>
+          <td>{{ cuenta.moneda }}</td>
+          <td><span class="estado{% if not cuenta.activa %} estado--apagado{% endif %}">{{ cuenta.activa|yesno:"Activa,Inactiva" }}</span></td>
+          <td class="derecha cifra">{{ cuenta.saldo|dinero:cuenta.moneda }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="texto-suave">No hay cuentas que coincidan con los filtros.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "gestion/_paginacion.html" %}
+</section>
+{% endblock %}

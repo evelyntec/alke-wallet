@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block titulo %}Clientes{% endblock %}
+{% block contenido %}
+<section class="panel">
+  <div class="panel__cabecera">
+    <h1>{% if user.is_staff %}Clientes{% else %}Mi perfil{% endif %}</h1>
+    {% if user.is_staff %}<a class="boton boton--principal" href="{% url 'gestion:cliente_crear' %}">Nuevo cliente</a>{% endif %}
+  </div>
+  {% if user.is_staff %}
+  <form method="get" class="filtros">
+    <input class="campo" type="search" name="q" value="{{ q }}" placeholder="Nombre, RUT o correo" aria-label="Buscar cliente">
+    <select class="campo" name="estado" aria-label="Estado">
+      <option value="">Todos</option>
+      <option value="activos" {% if estado == "activos" %}selected{% endif %}>Activos</option>
+      <option value="inactivos" {% if estado == "inactivos" %}selected{% endif %}>Inactivos</option>
+    </select>
+    <button type="submit" class="boton boton--suave">Filtrar</button>
+  </form>
+  {% endif %}
+  <div class="tabla-contenedor">
+    <table class="tabla">
+      <thead>
+        <tr><th>Nombre</th><th>RUT</th><th>Correo</th><th>Cuentas</th><th>Estado</th></tr>
+      </thead>
+      <tbody>
+        {% for cliente in object_list %}
+        <tr>
+          <td><a href="{{ cliente.get_absolute_url }}">{{ cliente.nombre_completo }}</a></td>
+          <td>{{ cliente.rut }}</td>
+          <td>{{ cliente.email }}</td>
+          <td>{{ cliente.cantidad_cuentas }}</td>
+          <td><span class="estado{% if not cliente.activo %} estado--apagado{% endif %}">{{ cliente.activo|yesno:"Activo,Inactivo" }}</span></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="texto-suave">No hay clientes que coincidan con la búsqueda.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "gestion/_paginacion.html" %}
+</section>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block titulo %}Iniciar sesión{% endblock %}
+{% block contenido %}
+<section class="acceso">
+  <div class="acceso__tarjeta">
+    <h1>Ingresa a tu billetera</h1>
+    <p class="texto-suave">Administra tus cuentas, transferencias y saldos en un solo lugar.</p>
+    {% if form.errors %}
+    <p class="aviso aviso--error">Usuario o contraseña incorrectos. Revisa los datos e inténtalo otra vez.</p>
+    {% endif %}
+    <form method="post" class="formulario">
+      {% csrf_token %}
+      {% include "gestion/_campos.html" %}
+      <input type="hidden" name="next" value="{{ next }}">
+      <button type="submit" class="boton boton--principal boton--ancho">Ingresar</button>
+    </form>
+    <p class="acceso__alterno">¿Aún no tienes cuenta? <a href="{% url 'gestion:registro' %}">Crea tu billetera</a></p>
+  </div>
+</section>
+{% endblock %}

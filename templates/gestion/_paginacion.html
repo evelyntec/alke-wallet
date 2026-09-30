@@ -1,0 +1,11 @@
+{% if is_paginated %}
+<nav class="paginacion" aria-label="Paginación">
+  {% if page_obj.has_previous %}
+  <a class="boton boton--suave" href="?page={{ page_obj.previous_page_number }}{% if parametros %}&{{ parametros }}{% endif %}">Anterior</a>
+  {% endif %}
+  <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a class="boton boton--suave" href="?page={{ page_obj.next_page_number }}{% if parametros %}&{{ parametros }}{% endif %}">Siguiente</a>
+  {% endif %}
+</nav>
+{% endif %}

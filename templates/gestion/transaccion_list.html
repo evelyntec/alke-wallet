@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load formatos %}
+{% block titulo %}Transacciones{% endblock %}
+{% block contenido %}
+<section class="panel">
+  <div class="panel__cabecera">
+    <h1>Transacciones</h1>
+    <a class="boton boton--principal" href="{% url 'gestion:transaccion_crear' %}">Nueva transacción</a>
+  </div>
+  <form method="get" class="filtros">
+    {% for campo in filtro %}{{ campo }}{% endfor %}
+    <button type="submit" class="boton boton--suave">Filtrar</button>
+  </form>
+  <div class="tabla-contenedor">
+    <table class="tabla">
+      <thead><tr><th>Fecha</th><th>Tipo</th><th>Origen</th><th>Destino</th><th>Etiquetas</th><th class="derecha">Monto</th></tr></thead>
+      <tbody>
+        {% for t in object_list %}
+        <tr>
+          <td><a href="{{ t.get_absolute_url }}">{{ t.fecha|date:"d-m-Y H:i" }}</a><br><small class="texto-suave">{{ t.descripcion|default:"Sin descripción" }}</small></td>
+          <td>{{ t.get_tipo_display }}</td>
+          <td>{{ t.cuenta_origen.numero|default:"—" }}</td>
+          <td>{{ t.cuenta_destino.numero|default:"—" }}</td>
+          <td>{% for e in t.etiquetas.all %}<span class="etiqueta" style="--color: {{ e.color }}">{{ e.nombre }}</span>{% endfor %}</td>
+          <td class="derecha cifra cifra--{{ t.tipo|lower }}">{{ t.monto|dinero:t.moneda }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="texto-suave">No hay transacciones con estos filtros.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "gestion/_paginacion.html" %}
+</section>
+{% endblock %}

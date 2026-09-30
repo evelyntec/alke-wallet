@@ -1,0 +1,61 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="{{ proyecto.AUTORA_COMPLETA }}">
+  <title>{% block titulo %}Inicio{% endblock %} | {{ proyecto.NOMBRE }}</title>
+  <link rel="icon" href="{% static 'img/logo.svg' %}" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+</head>
+<body>
+  <header class="barra">
+    <div class="barra__contenido">
+      <a class="marca" href="{% url 'gestion:inicio' %}">
+        <img src="{% static 'img/logo.svg' %}" alt="" width="34" height="34">
+        <span>{{ proyecto.NOMBRE }}</span>
+      </a>
+      {% if user.is_authenticated %}
+      <nav class="menu" aria-label="Principal">
+        <a href="{% url 'gestion:inicio' %}" class="{% if request.resolver_match.url_name == 'inicio' %}activo{% endif %}">Inicio</a>
+        <a href="{% url 'gestion:cliente_lista' %}" class="{% if 'cliente' in request.resolver_match.url_name %}activo{% endif %}">{% if user.is_staff %}Clientes{% else %}Mi perfil{% endif %}</a>
+        <a href="{% url 'gestion:cuenta_lista' %}" class="{% if 'cuenta' in request.resolver_match.url_name %}activo{% endif %}">Cuentas</a>
+        <a href="{% url 'gestion:transaccion_lista' %}" class="{% if 'transaccion' in request.resolver_match.url_name %}activo{% endif %}">Transacciones</a>
+        {% if user.is_staff %}
+        <a href="{% url 'gestion:reportes' %}" class="{% if request.resolver_match.url_name == 'reportes' %}activo{% endif %}">Reportes</a>
+        <a href="{% url 'admin:index' %}">Admin</a>
+        {% endif %}
+      </nav>
+      <form class="salir" method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <span class="salir__nombre">{{ user.get_full_name|default:user.username }}</span>
+        <button type="submit" class="boton boton--suave">Cerrar sesión</button>
+      </form>
+      {% endif %}
+    </div>
+  </header>
+
+  <main class="contenido">
+    {% if messages %}
+    <div class="avisos">
+      {% for message in messages %}
+      <div class="aviso aviso--{{ message.tags }}" role="{% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}alert{% else %}status{% endif %}">
+        <p>{{ message }}</p>
+        <button type="button" class="aviso__cerrar" aria-label="Cerrar mensaje">&times;</button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% block contenido %}{% endblock %}
+  </main>
+
+  <footer class="pie">
+    <p>{{ proyecto.NOMBRE }} v{{ proyecto.VERSION }} · Desarrollado por <a href="{{ proyecto.GITHUB }}">{{ proyecto.AUTORA }}</a> · {{ proyecto.ANIO }}</p>
+  </footer>
+  <script src="{% static 'js/avisos.js' %}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

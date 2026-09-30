@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load formatos %}
+{% block titulo %}Inicio{% endblock %}
+{% block contenido %}
+<section class="bienvenida">
+  <div>
+    <h1>Hola, {{ user.first_name|default:user.username }}</h1>
+    <p class="texto-suave">{% if user.is_staff %}Vista general de todas las billeteras.{% else %}Este es el estado de tus cuentas.{% endif %}</p>
+  </div>
+  <div class="acciones">
+    <a class="boton boton--principal" href="{% url 'gestion:transaccion_crear' %}?tipo=TRANSFERENCIA">Transferir</a>
+    <a class="boton boton--suave" href="{% url 'gestion:transaccion_crear' %}?tipo=DEPOSITO">Depositar</a>
+    <a class="boton boton--suave" href="{% url 'gestion:cuenta_crear' %}">Abrir cuenta</a>
+  </div>
+</section>
+
+<section class="billetera">
+  {% for fila in resumen %}
+  <article class="billetera__tarjeta{% if fila.moneda == 'USD' %} billetera__tarjeta--dolar{% endif %}">
+    <span class="billetera__chip" aria-hidden="true"></span>
+    <p class="billetera__moneda">Saldo disponible en {{ fila.moneda }}</p>
+    <p class="billetera__monto">{{ fila.total|dinero:fila.moneda }}</p>
+    <p class="billetera__detalle">{{ fila.cantidad }} cuenta{{ fila.cantidad|pluralize }} activa{{ fila.cantidad|pluralize }}</p>
+  </article>
+  {% empty %}
+  <article class="vacio">
+    <p>Todavía no hay cuentas activas.</p>
+    <a class="boton boton--principal" href="{% url 'gestion:cuenta_crear' %}">Abrir la primera cuenta</a>
+  </article>
+  {% endfor %}
+</section>
+
+<div class="columnas">
+  <section class="panel">
+    <div class="panel__cabecera">
+      <h2>Cuentas</h2>
+      <a href="{% url 'gestion:cuenta_lista' %}">Ver todas</a>
+    </div>
+    <ul class="lista">
+      {% for cuenta in cuentas %}
+      <li>
+        <a href="{{ cuenta.get_absolute_url }}">
+          <span>
+            <strong>{{ cuenta.alias|default:cuenta.get_tipo_display }}</strong>
+            <small>{{ cuenta.numero }}{% if user.is_staff %} · {{ cuenta.cliente }}{% endif %}</small>
+          </span>
+          <span class="cifra">{{ cuenta.saldo|dinero:cuenta.moneda }}</span>
+        </a>
+      </li>
+      {% empty %}
+      <li class="texto-suave">Sin cuentas por ahora.</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="panel">
+    <div class="panel__cabecera">
+      <h2>Últimos movimientos</h2>
+      <a href="{% url 'gestion:transaccion_lista' %}">Ver todos</a>
+    </div>
+    <ul class="lista">
+      {% for t in ultimas %}
+      <li>
+        <a href="{{ t.get_absolute_url }}">
+          <span>
+            <strong>{{ t.descripcion|default:t.get_tipo_display }}</strong>
+            <small>{{ t.get_tipo_display }} · {{ t.fecha|date:"d M Y, H:i" }}</small>
+          </span>
+          <span class="cifra cifra--{{ t.tipo|lower }}">{{ t.monto|dinero:t.moneda }}</span>
+        </a>
+      </li>
+      {% empty %}
+      <li class="texto-suave">Aún no hay movimientos. Haz tu primer depósito para comenzar.</li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>
+{% endblock %}

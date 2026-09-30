@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load formatos %}
+{% block titulo %}Transacción #{{ object.pk }}{% endblock %}
+{% block contenido %}
+<section class="panel panel--angosto">
+  <div class="panel__cabecera">
+    <h1>{{ object.get_tipo_display }} #{{ object.pk }}</h1>
+    <div class="acciones">
+      <a class="boton boton--suave" href="{% url 'gestion:transaccion_editar' object.pk %}">Editar</a>
+      {% if user.is_staff %}<a class="boton boton--peligro" href="{% url 'gestion:transaccion_anular' object.pk %}">Anular</a>{% endif %}
+    </div>
+  </div>
+  <p class="monto-grande cifra--{{ object.tipo|lower }}">{{ object.monto|dinero:object.moneda }}</p>
+  <dl class="ficha">
+    <div><dt>Fecha</dt><dd>{{ object.fecha|date:"d \d\e F \d\e Y, H:i" }}</dd></div>
+    <div><dt>Descripción</dt><dd>{{ object.descripcion|default:"Sin descripción" }}</dd></div>
+    <div><dt>Cuenta de origen</dt><dd>{% if object.cuenta_origen %}<a href="{{ object.cuenta_origen.get_absolute_url }}">{{ object.cuenta_origen }}</a>{% else %}—{% endif %}</dd></div>
+    <div><dt>Cuenta de destino</dt><dd>{% if object.cuenta_destino %}<a href="{{ object.cuenta_destino.get_absolute_url }}">{{ object.cuenta_destino }}</a>{% else %}—{% endif %}</dd></div>
+    <div><dt>Etiquetas</dt><dd>{% for e in object.etiquetas.all %}<span class="etiqueta" style="--color: {{ e.color }}">{{ e.nombre }}</span>{% empty %}Sin etiquetas{% endfor %}</dd></div>
+    <div><dt>Registrada por</dt><dd>{{ object.registrada_por.username|default:"Sistema" }}</dd></div>
+  </dl>
+</section>
+{% endblock %}
